@@ -50,7 +50,6 @@ import net.runelite.api.MenuAction;
 import static net.runelite.api.MenuAction.MENU_ACTION_DEPRIORITIZE_OFFSET;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
-import net.runelite.api.NpcID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
@@ -68,7 +67,6 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 
@@ -379,25 +377,8 @@ public class NpcIndicatorsPlugin extends Plugin
 	{
 		removeOldHighlightedRespawns();
 		validateSpawnedNpcs();
-		removeDeadChompyBirds();
 		lastTickUpdate = Instant.now();
 		lastPlayerLocation = client.getLocalPlayer().getWorldLocation();
-	}
-
-	/**
-	 * Removes dead chompy birds from highlighted npcs.
-	 */
-	private void removeDeadChompyBirds()
-	{
-		List<NPC> npcsToRemove = new ArrayList<>();
-		for (NPC npc : highlightedNpcs)
-		{
-			if (npc.getId() == NpcID.CHOMPY_BIRD_1476)
-			{
-				npcsToRemove.add(npc);
-			}
-		}
-		highlightedNpcs.removeAll(npcsToRemove);
 	}
 
 	private static boolean isInViewRange(WorldPoint wp1, WorldPoint wp2)

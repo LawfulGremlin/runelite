@@ -192,24 +192,6 @@ public class NpcSceneOverlay extends Overlay
 			case GLOW:
 				modelOutliner.drawOutline(actor, 8, color, TRANSPARENT);
 				break;
-
-			case True_Locations:
-				size = 1;
-				composition = actor.getTransformedDefinition();
-				if (composition != null)
-				{
-					size = composition.getSize();
-				}
-				WorldPoint npcWorldPoint = actor.getWorldLocation();
-				float offsetWorldPoints = ((float)size - 1) / 2;
-				int offsetLocalPoints = (int)(offsetWorldPoints * 128);
-				LocalPoint npcLocalPoint = LocalPoint.fromWorld(client, npcWorldPoint);
-				LocalPoint npcCentreLocalPoints = new LocalPoint(npcLocalPoint.getX() + offsetLocalPoints,
-						npcLocalPoint.getY() + offsetLocalPoints);
-				tilePoly = Perspective.getCanvasTileAreaPoly(client, npcCentreLocalPoints, size);
-
-				renderPoly(graphics, color, tilePoly);
-				break;
 		}
 
 		if (config.drawNames())
