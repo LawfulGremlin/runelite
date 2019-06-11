@@ -53,14 +53,14 @@ import net.runelite.api.Scene;
 import net.runelite.api.Tile;
 import net.runelite.api.TileObject;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.DecorativeObjectDespawned;
-import net.runelite.api.events.DecorativeObjectSpawned;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.api.events.DecorativeObjectSpawned;
+import net.runelite.api.events.DecorativeObjectDespawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.input.KeyListener;
@@ -68,6 +68,8 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Slf4j
 @PluginDescriptor(
@@ -80,11 +82,12 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 {
 	private static final String CONFIG_GROUP = "objectindicators";
 	private static final String MARK = "Mark object";
+	private static final String MARK_CLICKBOX = "Mark clickbox";
 	private static final String UNMARK = "Unmark object";
 
 	private final Gson GSON = new Gson();
 	@Getter(AccessLevel.PACKAGE)
-	private final List<TileObject> objects = new ArrayList<>();
+	private final List<Pair<TileObject, ObjectPoint>> objects = new ArrayList<>();
 	private final Map<Integer, Set<ObjectPoint>> points = new HashMap<>();
 	private boolean hotKeyPressed;
 
@@ -176,13 +179,13 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 	@Subscribe
 	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
-		objects.remove(event.getGameObject());
+		objects.removeIf(pair -> pair.getLeft() == event.getGameObject());
 	}
 
 	@Subscribe
 	public void onDecorativeObjectDespawned(DecorativeObjectDespawned event)
 	{
-		objects.remove(event.getDecorativeObject());
+		objects.removeIf(pair -> pair.getLeft() == event.getDecorativeObject());
 	}
 
 	@Subscribe
@@ -220,8 +223,8 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 		}
 
 		MenuEntry[] menuEntries = client.getMenuEntries();
-		menuEntries = Arrays.copyOf(menuEntries, menuEntries.length + 1);
-		MenuEntry menuEntry = menuEntries[menuEntries.length - 1] = new MenuEntry();
+		menuEntries = Arrays.copyOf(menuEntries, menuEntries.length + 2);
+		MenuEntry menuEntry = menuEntries[menuEntries.length - 2] = new MenuEntry();
 
 		String option = MARK;
 
@@ -243,11 +246,12 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 				final int regionId = loc.getRegionID();
 
 				final ObjectPoint point = new ObjectPoint(
-					name,
-					regionId,
-					loc.getX() & (REGION_SIZE - 1),
-					loc.getY() & (REGION_SIZE - 1),
-					client.getPlane());
+						name,
+						regionId,
+						loc.getX() & (REGION_SIZE - 1),
+						loc.getY() & (REGION_SIZE - 1),
+						client.getPlane(),
+						ObjectPoint.STYLE_OUTLINE);
 
 				final Set<ObjectPoint> objectPoints = points.get(regionId);
 
@@ -259,21 +263,45 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 		}
 
 		menuEntry.setOption(option);
-
 		menuEntry.setTarget(event.getTarget());
 		menuEntry.setParam0(event.getActionParam0());
 		menuEntry.setParam1(event.getActionParam1());
 		menuEntry.setIdentifier(event.getIdentifier());
 		menuEntry.setType(MenuAction.RUNELITE.getId());
+
+		menuEntry = menuEntries[menuEntries.length - 1] = new MenuEntry();
+		menuEntry.setOption(MARK_CLICKBOX);
+		menuEntry.setTarget(event.getTarget());
+		menuEntry.setParam0(event.getActionParam0());
+		menuEntry.setParam1(event.getActionParam1());
+		menuEntry.setIdentifier(event.getIdentifier());
+		menuEntry.setType(MenuAction.RUNELITE.getId());
+
 		client.setMenuEntries(menuEntries);
 	}
 
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if (event.getMenuAction() != MenuAction.RUNELITE
-			|| (!event.getMenuOption().equals(MARK)
-			&& !event.getMenuOption().equals(UNMARK)))
+		if (event.getMenuAction() != MenuAction.RUNELITE)
+		{
+			return;
+		}
+
+		int style;
+		if (event.getMenuOption().equals(MARK))
+		{
+			style = ObjectPoint.STYLE_OUTLINE;
+		}
+		else if (event.getMenuOption().equals(UNMARK))
+		{
+			style = ObjectPoint.STYLE_OUTLINE;
+		}
+		else if (event.getMenuOption().equals(MARK_CLICKBOX))
+		{
+			style = ObjectPoint.STYLE_CLICKBOX;
+		}
+		else
 		{
 			return;
 		}
@@ -298,7 +326,7 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 			return;
 		}
 
-		markObject(name, object);
+		markObject(name, object, style);
 	}
 
 	private void checkObjectPoints(TileObject object)
@@ -314,11 +342,11 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 		for (ObjectPoint objectPoint : objectPoints)
 		{
 			if ((worldPoint.getX() & (REGION_SIZE - 1)) == objectPoint.getRegionX()
-				&& (worldPoint.getY() & (REGION_SIZE - 1)) == objectPoint.getRegionY())
+					&& (worldPoint.getY() & (REGION_SIZE - 1)) == objectPoint.getRegionY())
 			{
 				if (objectPoint.getName().equals(client.getObjectDefinition(object.getId()).getName()))
 				{
-					objects.add(object);
+					objects.add(new ImmutablePair<>(object, objectPoint));
 					break;
 				}
 			}
@@ -370,7 +398,7 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 		return null;
 	}
 
-	private void markObject(String name, final TileObject object)
+	private void markObject(String name, final TileObject object, int style)
 	{
 		if (object == null)
 		{
@@ -380,23 +408,24 @@ public class ObjectIndicatorsPlugin extends Plugin implements KeyListener
 		final WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, object.getLocalLocation());
 		final int regionId = worldPoint.getRegionID();
 		final ObjectPoint point = new ObjectPoint(
-			name,
-			regionId,
-			worldPoint.getX() & (REGION_SIZE - 1),
-			worldPoint.getY() & (REGION_SIZE - 1),
-			client.getPlane());
+				name,
+				regionId,
+				worldPoint.getX() & (REGION_SIZE - 1),
+				worldPoint.getY() & (REGION_SIZE - 1),
+				client.getPlane(),
+				style);
 
 		Set<ObjectPoint> objectPoints = points.computeIfAbsent(regionId, k -> new HashSet<>());
 
 		if (objectPoints.contains(point))
 		{
 			objectPoints.remove(point);
-			objects.remove(object);
+			objects.remove(new ImmutablePair<>(object, point));
 		}
 		else
 		{
 			objectPoints.add(point);
-			objects.add(object);
+			objects.add(new ImmutablePair<>(object, point));
 		}
 
 		savePoints(regionId, objectPoints);
