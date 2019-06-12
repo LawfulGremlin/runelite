@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Jacky <liangj97@gmail.com>
+ * Copyright (c) 2018, https://runelitepl.us
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.inferno;
+package net.runelite.client.plugins.pvptools;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
-
-@ConfigGroup("inferno")
-public interface InfernoConfig extends Config
+public enum AttackMode
 {
-	@ConfigItem(
-		position = 0,
-		keyName = "Nibbler Overlay",
-		name = "Nibbler Overlay",
-		description = "Shows if there are any Nibblers left"
-	)
-	default boolean displayNibblerOverlay()
+	CLAN("Clan"),
+	FRIENDS("Friends"),
+	BOTH("Both");
+
+	private final String name;
+
+	AttackMode(String name)
 	{
-		return false;
+		this.name = name;
 	}
 
-	@ConfigItem(
-		position = 1,
-		keyName = "Prayer Helper",
-		name = "Prayer Helper",
-		description = "Tells you what to flick in how many ticks"
-	)
-	default boolean showPrayerHelp()
+	@Override
+	public String toString()
 	{
-		return false;
-	}
-	
-	@ConfigItem(
-		position = 2,
-		keyName = "Wave Display",
-		name = "Wave display",
-		description = "Shows monsters that will spawn on the selected wave(s)."
-	)
-	default InfernoWaveDisplayMode waveDisplay()
-	{
-		return InfernoWaveDisplayMode.BOTH;
+		return name;
 	}
 }
