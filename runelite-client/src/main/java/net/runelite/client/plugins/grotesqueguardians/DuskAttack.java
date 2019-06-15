@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2018, Infinitay <https://github.com/Infinitay>
- * Copyright (c) 2018, Shaun Dreclin <https://github.com/ShaunDreclin>
- *
+ * Copyright (c) 2018, https://runelitepl.us
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,25 +22,31 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.rememberclan;
+package net.runelite.client.plugins.grotesqueguardians;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import net.runelite.api.Prayer;
 
-@ConfigGroup("rememberclan")
-public interface RememberClanConfig extends Config
+public enum DuskAttack
 {
-	@ConfigItem(
-		position = 1,
-		keyName = "clanname",
-		name = "Clan Name",
-		description = "Clanname to always remember"
-	)
-	default String clanname()
+	MELEE(7800, Prayer.PROTECT_FROM_MELEE),
+	RANGE(7801, Prayer.PROTECT_FROM_MISSILES);
+
+	private final int animation;
+	private final Prayer prayer;
+
+	DuskAttack(int animation, Prayer prayer)
 	{
-		return "";
+		this.animation = animation;
+		this.prayer = prayer;
 	}
 
+	public int getAnimation()
+	{
+		return animation;
+	}
 
+	public Prayer getPrayer()
+	{
+		return prayer;
+	}
 }

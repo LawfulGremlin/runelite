@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2018, Infinitay <https://github.com/Infinitay>
- * Copyright (c) 2018, Shaun Dreclin <https://github.com/ShaunDreclin>
+ * Copyright (c) 2018, Lotto <https://github.com/devLotto>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,54 +22,26 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package net.runelite.client.plugins.statusbars.config;
 
-package net.runelite.client.plugins.rememberclan;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import com.google.inject.Provides;
-import javax.inject.Inject;
-import net.runelite.api.Client;
-import net.runelite.api.VarClientStr;
-import net.runelite.api.events.GameTick;
-import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.PluginType;
-
-@PluginDescriptor(
-	name = "Remember Clan",
-	description = "Remember a specific clan!",
-	type = PluginType.UTILITY,
-	enabledByDefault = false
-)
-
-public class RememberClanPlugin extends Plugin
+@Getter
+@RequiredArgsConstructor
+public enum BarMode
 {
+	DISABLED("Disabled"),
+	HITPOINTS("Hitpoints"),
+	PRAYER("Prayer"),
+	RUN_ENERGY("Run Energy"),
+	SPECIAL_ATTACK("Special Attack");
 
-	@Inject
-	private Client client;
+	private final String name;
 
-	@Inject
-	private RememberClanConfig config;
-
-	@Inject
-	private ChatMessageManager chatMessageManager;
-
-	private boolean loggingIn;
-
-	@Provides
-	RememberClanConfig provideConfig(ConfigManager configManager)
+	@Override
+	public String toString()
 	{
-		return configManager.getConfig(RememberClanConfig.class);
+		return name;
 	}
-
-	@Subscribe
-	public void onGameTick(GameTick event)
-	{
-		client.setVar(VarClientStr.RECENT_CLAN_CHAT, config.clanname());
-
-	}
-
-
 }
