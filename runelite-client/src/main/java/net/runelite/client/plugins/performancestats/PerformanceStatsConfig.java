@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Kamiel
+ * Copyright (c) 2019, TheStonedTurtle <https://github.com/TheStonedTurtle>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,54 +22,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.raids.solver;
+package net.runelite.client.plugins.performancestats;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
 
-public class Layout
+@ConfigGroup("performancestats")
+public interface PerformanceStatsConfig extends Config
 {
-	@Getter
-	private final List<Room> rooms = new ArrayList<>();
-
-	@Getter
-	@Setter
-	private String test;
-
-	public void add(Room room)
+	@ConfigItem(
+		position = 0,
+		keyName = "submitTimeout",
+		name = "Submit Timeout (seconds)",
+		description = "Submits after this many seconds of inactivity"
+	)
+	default int submitTimeout()
 	{
-		rooms.add(room);
-	}
-
-	public Room getRoomAt(int position)
-	{
-		for (Room room : rooms)
-		{
-			if (room.getPosition() == position)
-			{
-				return room;
-			}
-		}
-
-		return null;
-	}
-
-	public String toCode()
-	{
-		StringBuilder builder = new StringBuilder();
-
-		for (Room room : rooms)
-		{
-			builder.append(room.getSymbol());
-		}
-
-		return builder.toString();
-	}
-
-	public String toCodeString()
-	{
-		return toCode().replaceAll("#", "").replaceAll("¤", "");
+		return 30;
 	}
 }
